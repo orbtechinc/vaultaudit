@@ -159,14 +159,6 @@
             background: rgba(255,255,255,0.02);
         }
 
-        .security-tag {
-            font-size: 8px;
-            padding: 2px 6px;
-            border-radius: 2px;
-            font-weight: 900;
-            text-transform: uppercase;
-        }
-
         #connection-status {
             font-size: 9px;
             padding: 4px 8px;
@@ -182,8 +174,7 @@
         ::-webkit-scrollbar-thumb { background: #222; border-radius: 10px; }
 
         .hidden-auth { display: none !important; }
-
-        /* Estilos do Modal de Dossiê */
+        
         .dossie-section-title {
             font-size: 10px;
             font-weight: 900;
@@ -193,6 +184,16 @@
             margin-bottom: 12px;
             border-bottom: 1px solid rgba(239, 68, 68, 0.3);
             padding-bottom: 4px;
+        }
+
+        .edit-input {
+            background: #111 !important;
+            border: 1px solid #333 !important;
+            color: #fff !important;
+            width: 100%;
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 4px;
         }
     </style>
 </head>
@@ -208,54 +209,26 @@
                 <h1 class="text-2xl font-black tracking-tighter uppercase text-white">Vault<span class="text-red-600">Audit</span></h1>
                 <p class="text-[10px] text-gray-500 font-bold uppercase tracking-[0.2em] mt-2">Acesso Restrito ao Terminal</p>
             </div>
-
-            <div id="login-error" class="hidden mb-4 p-3 bg-red-600/10 border border-red-600/50 rounded text-red-500 text-[10px] font-black uppercase text-center">
-                Credenciais Inválidas
-            </div>
-
+            <div id="login-error" class="hidden mb-4 p-3 bg-red-600/10 border border-red-600/50 rounded text-red-500 text-[10px] font-black uppercase text-center">Credenciais Inválidas</div>
             <div class="space-y-4">
-                <div>
-                    <label class="field-label">ID de Operador (Email)</label>
-                    <input type="email" id="login-email" class="input-dark w-full p-3 rounded" placeholder="exemplo@vault.com">
-                </div>
-                <div>
-                    <label class="field-label">Chave de Segurança (Senha)</label>
-                    <input type="password" id="login-password" class="input-dark w-full p-3 rounded" placeholder="••••••••">
-                </div>
-                <button onclick="handleLogin()" id="login-btn" class="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded font-black text-xs uppercase tracking-widest transition-all mt-4 flex items-center justify-center gap-2">
-                    Autenticar <i class="fas fa-chevron-right text-[10px]"></i>
-                </button>
-                <div class="flex justify-between items-center mt-6 pt-6 border-t border-white/5">
-                    <span class="text-[8px] font-black text-gray-700 uppercase">Sistema de Auditoria v4.2</span>
-                    <button onclick="handleGuestLogin()" class="text-[8px] font-black text-gray-500 uppercase hover:text-white transition-colors">Acesso Visitante</button>
-                </div>
+                <div><label class="field-label">ID de Operador (Email)</label><input type="email" id="login-email" class="input-dark w-full p-3 rounded" placeholder="exemplo@vault.com"></div>
+                <div><label class="field-label">Chave de Segurança (Senha)</label><input type="password" id="login-password" class="input-dark w-full p-3 rounded" placeholder="••••••••"></div>
+                <button onclick="handleLogin()" id="login-btn" class="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded font-black text-xs uppercase tracking-widest transition-all mt-4 flex items-center justify-center gap-2">Autenticar <i class="fas fa-chevron-right text-[10px]"></i></button>
+                <div class="flex justify-between items-center mt-6 pt-6 border-t border-white/5"><span class="text-[8px] font-black text-gray-700 uppercase">Sistema de Auditoria v4.2</span><button onclick="handleGuestLogin()" class="text-[8px] font-black text-gray-500 uppercase hover:text-white transition-colors">Acesso Visitante</button></div>
             </div>
         </div>
     </div>
 
-    <!-- CONTEÚDO PRINCIPAL (OCULTO ATÉ LOGIN) -->
+    <!-- CONTEÚDO PRINCIPAL -->
     <div id="app-content" class="hidden-auth">
         <nav class="border-b border-white/5 bg-black sticky top-0 z-[100]">
             <div class="max-w-[1600px] mx-auto px-6 py-4 flex justify-between items-center">
-                <div class="flex items-center gap-3">
-                    <div class="bg-red-600 p-2 rounded-sm">
-                        <i class="fas fa-fingerprint text-white"></i>
-                    </div>
-                    <h1 class="text-xl font-black tracking-tighter uppercase">Vault<span class="text-red-600">Audit</span></h1>
-                </div>
-                <div class="flex items-center gap-6">
-                    <div id="connection-status" class="status-offline font-black uppercase tracking-widest">
-                        <i class="fas fa-circle text-[6px]"></i> Desconectado
-                    </div>
-                    <button onclick="handleLogout()" class="text-gray-500 hover:text-white transition-colors">
-                        <i class="fas fa-sign-out-alt"></i>
-                    </button>
-                </div>
+                <div class="flex items-center gap-3"><div class="bg-red-600 p-2 rounded-sm"><i class="fas fa-fingerprint text-white"></i></div><h1 class="text-xl font-black tracking-tighter uppercase">Vault<span class="text-red-600">Audit</span></h1></div>
+                <div class="flex items-center gap-6"><div id="connection-status" class="status-offline font-black uppercase tracking-widest"><i class="fas fa-circle text-[6px]"></i> Desconectado</div><button onclick="handleLogout()" class="text-gray-500 hover:text-white transition-colors"><i class="fas fa-sign-out-alt"></i></button></div>
             </div>
         </nav>
 
         <main class="max-w-[1600px] mx-auto px-6 py-6">
-            
             <div class="flex gap-8 mb-6 border-b border-white/5">
                 <button onclick="switchTab('dash')" id="tab-dash" class="tab-btn active pb-4 text-[11px] font-black uppercase tracking-widest transition-all">Painel de Controle</button>
                 <button onclick="switchTab('docs')" id="tab-docs" class="tab-btn pb-4 text-[11px] font-black uppercase tracking-widest text-gray-600 transition-all">Registro de Entrada</button>
@@ -265,27 +238,12 @@
             <!-- ABA DASHBOARD -->
             <div id="content-dash" class="tab-content">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div class="glass-card p-6 rounded-xl stat-card">
-                        <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Total de Cadastros</p>
-                        <h2 id="dash-total" class="text-4xl font-black text-white italic">0</h2>
-                        <p class="text-[9px] text-gray-600 mt-2 font-bold uppercase">Empresas no Cloud</p>
-                    </div>
-                    <div class="glass-card p-6 rounded-xl stat-card border-l-green-600">
-                        <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Auditorias Finalizadas</p>
-                        <h2 id="dash-concluidas" class="text-4xl font-black text-green-500 italic">0</h2>
-                        <p class="text-[9px] text-gray-600 mt-2 font-bold uppercase">Contas 100% encerradas</p>
-                    </div>
-                    <div class="glass-card p-6 rounded-xl stat-card border-l-yellow-600">
-                        <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Índice de Segurança Médio</p>
-                        <h2 id="dash-security-avg" class="text-4xl font-black text-blue-500 italic">0%</h2>
-                        <p class="text-[9px] text-gray-600 mt-2 font-bold uppercase">Score de confiabilidade</p>
-                    </div>
+                    <div class="glass-card p-6 rounded-xl stat-card"><p class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Total de Cadastros</p><h2 id="dash-total" class="text-4xl font-black text-white italic">0</h2><p class="text-[9px] text-gray-600 mt-2 font-bold uppercase">Empresas no Cloud</p></div>
+                    <div class="glass-card p-6 rounded-xl stat-card border-l-green-600"><p class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Auditorias Finalizadas</p><h2 id="dash-concluidas" class="text-4xl font-black text-green-500 italic">0</h2><p class="text-[9px] text-gray-600 mt-2 font-bold uppercase">Contas 100% encerradas</p></div>
+                    <div class="glass-card p-6 rounded-xl stat-card border-l-yellow-600"><p class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Índice de Segurança Médio</p><h2 id="dash-security-avg" class="text-4xl font-black text-blue-500 italic">0%</h2><p class="text-[9px] text-gray-600 mt-2 font-bold uppercase">Score de confiabilidade</p></div>
                 </div>
-
                 <div class="glass-card rounded-xl border border-white/5 p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-xs font-black uppercase text-white tracking-widest">Monitoramento Cloud em Tempo Real</h3>
-                    </div>
+                    <div class="flex justify-between items-center mb-6"><h3 class="text-xs font-black uppercase text-white tracking-widest">Monitoramento Cloud em Tempo Real</h3></div>
                     <div id="dash-recent-list" class="space-y-4"></div>
                 </div>
             </div>
@@ -305,7 +263,7 @@
                                     <div class="section-header header-purple">Contato</div>
                                     <div><label class="field-label">Telefone</label><input type="text" id="rep_tel" class="input-dark w-full p-2 rounded"></div>
                                     <div class="section-header header-red">Localização Empresa</div>
-                                    <div><label class="field-label">CEP / Endereço</label><textarea id="rep_endereco" class="input-dark w-full p-2 rounded h-16 resize-none"></textarea></div>
+                                    <div><label class="field-label">CEP Empresa / Endereço</label><textarea id="rep_endereco" class="input-dark w-full p-2 rounded h-16 resize-none"></textarea></div>
                                     <div class="section-header header-green">Nascimento</div>
                                     <div><label class="field-label">Data de Nasc.</label><input type="date" id="rep_nasc" class="input-dark w-full p-2 rounded"></div>
                                 </div>
@@ -322,18 +280,13 @@
                                     <div class="section-header header-green">Social</div>
                                     <div><label class="field-label">Protocolo CT SOCIAL</label><input type="text" id="prot_social" class="input-dark w-full p-2 rounded"></div>
                                 </div>
-                                <div class="col-span-2 flex justify-end mt-4 pt-4 border-t border-white/5">
-                                    <button type="button" onclick="salvarCadastro()" class="bg-red-600 hover:bg-red-700 text-white px-12 py-3 rounded font-black text-xs uppercase tracking-widest transition-all">Salvar no Cloud</button>
-                                </div>
+                                <div class="col-span-2 flex justify-end mt-4 pt-4 border-t border-white/5"><button type="button" onclick="salvarCadastro()" class="bg-red-600 hover:bg-red-700 text-white px-12 py-3 rounded font-black text-xs uppercase tracking-widest transition-all">Salvar no Cloud</button></div>
                             </form>
                         </div>
                     </div>
                     <div class="lg:col-span-3">
                         <div class="glass-card rounded-xl overflow-hidden flex flex-col h-full max-h-[850px]">
-                            <div class="p-4 bg-white/5 border-b border-white/5 flex justify-between items-center">
-                                <span class="text-[9px] font-black uppercase text-gray-500">Fluxo Operacional</span>
-                                <span id="counter" class="bg-red-600 text-white text-[9px] px-2 py-0.5 rounded font-bold">0</span>
-                            </div>
+                            <div class="p-4 bg-white/5 border-b border-white/5 flex justify-between items-center"><span class="text-[9px] font-black uppercase text-gray-500">Fluxo Operacional</span><span id="counter" class="bg-red-600 text-white text-[9px] px-2 py-0.5 rounded font-bold">0</span></div>
                             <div id="listaEmpresas" class="overflow-y-auto p-2 space-y-2"></div>
                         </div>
                     </div>
@@ -349,24 +302,21 @@
 
     <!-- MODAL PRONTUARIO (DOSSIÊ COMPLETO) -->
     <div id="modalProntuario" class="fixed inset-0 z-[200] hidden flex items-center justify-center p-4 bg-black/95 backdrop-blur-md">
-        <div class="glass-card w-full max-w-5xl rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="p-4 bg-red-600 flex justify-between items-center flex-shrink-0">
-                <div class="flex items-center gap-3">
-                    <i class="fas fa-file-invoice text-white"></i>
-                    <h2 class="text-xs font-black text-white uppercase tracking-widest italic">Dossiê Completo de Auditoria</h2>
+        <div class="glass-card w-full max-w-5xl rounded-xl border border-white/10 shadow-2xl overflow-hidden">
+            <div class="p-4 bg-red-600 flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <h2 class="text-xs font-black text-white uppercase tracking-widest italic">Terminal de Auditoria: Dossiê Completo</h2>
+                    <button id="btn-edit-dossie" class="bg-white/10 hover:bg-white/20 text-white text-[9px] px-3 py-1 rounded font-black uppercase transition-all">Editar Informações</button>
+                    <button id="btn-save-dossie" class="hidden bg-green-600 hover:bg-green-700 text-white text-[9px] px-3 py-1 rounded font-black uppercase transition-all">Salvar Alterações</button>
                 </div>
-                <button onclick="closeModal()" class="text-white hover:scale-110 transition-transform"><i class="fas fa-times"></i></button>
+                <button onclick="closeModal()" class="text-white hover:scale-110"><i class="fas fa-times"></i></button>
             </div>
-            <div id="modalContent" class="p-8 grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8 overflow-y-auto bg-black">
-                <!-- Conteúdo gerado via JS -->
-            </div>
-            <div class="p-4 border-t border-white/5 bg-zinc-900/50 flex justify-end flex-shrink-0">
-                <button onclick="closeModal()" class="px-6 py-2 text-[10px] font-black uppercase text-gray-400 hover:text-white transition-colors">Fechar Terminal</button>
+            <div id="modalContent" class="p-8 grid grid-cols-2 gap-x-12 gap-y-8 max-h-[85vh] overflow-y-auto bg-black">
+                <!-- Preenchido via JS -->
             </div>
         </div>
     </div>
 
-    <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
         import { getFirestore, collection, doc, updateDoc, onSnapshot, query, addDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
@@ -392,19 +342,12 @@
         let localDB = [];
         let currentUser = null;
         let unsubscribeSnap = null;
+        let currentEditingFireId = null;
 
-        // AUTH
         window.handleLogin = async function() {
             const email = document.getElementById('login-email').value;
             const pass = document.getElementById('login-password').value;
-            const btn = document.getElementById('login-btn');
-            const err = document.getElementById('login-error');
-            if(!email || !pass) return;
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Validando...';
-            err.classList.add('hidden');
-            try { await signInWithEmailAndPassword(auth, email, pass); } 
-            catch (e) { err.classList.remove('hidden'); btn.disabled = false; btn.innerHTML = 'Autenticar <i class="fas fa-chevron-right"></i>'; }
+            try { await signInWithEmailAndPassword(auth, email, pass); } catch (e) { document.getElementById('login-error').classList.remove('hidden'); }
         };
 
         window.handleGuestLogin = async () => await signInAnonymously(auth);
@@ -414,20 +357,25 @@
             currentUser = user;
             document.getElementById('login-screen').classList.toggle('hidden', !!user);
             document.getElementById('app-content').classList.toggle('hidden-auth', !user);
-            if (user) iniciarSincronizacao();
+            if (user) {
+                document.getElementById('connection-status').className = 'status-online font-black uppercase tracking-widest';
+                document.getElementById('connection-status').innerHTML = '<i class="fas fa-circle text-[6px]"></i> Cloud Online';
+                const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'empresas'));
+                unsubscribeSnap = onSnapshot(q, (snapshot) => {
+                    localDB = [];
+                    snapshot.forEach(doc => localDB.push({ fireId: doc.id, ...doc.data() }));
+                    localDB.sort((a, b) => b.id - a.id);
+                    renderListaEmpresas();
+                    updateDashboard();
+                    if (!document.getElementById('content-lab').classList.contains('hidden')) renderLab();
+                    // Se o modal estiver aberto, atualiza os dados em tempo real se não estiver editando
+                    const modal = document.getElementById('modalProntuario');
+                    if(!modal.classList.contains('hidden') && currentEditingFireId && document.getElementById('btn-save-dossie').classList.contains('hidden')) {
+                        openProntuario(currentEditingFireId);
+                    }
+                });
+            }
         });
-
-        function iniciarSincronizacao() {
-            const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'empresas'));
-            unsubscribeSnap = onSnapshot(q, (snapshot) => {
-                localDB = [];
-                snapshot.forEach(doc => localDB.push({ fireId: doc.id, ...doc.data() }));
-                localDB.sort((a, b) => b.id - a.id);
-                renderListaEmpresas();
-                if (!document.getElementById('content-lab').classList.contains('hidden')) renderLab();
-                updateDashboard();
-            });
-        }
 
         window.salvarCadastro = async function() {
             const data = {
@@ -454,10 +402,16 @@
 
         window.setStatus = async (empFireId, stepIdx, status) => {
             const e = localDB.find(x => x.fireId === empFireId);
-            if (!e || e.checkpoints[stepIdx].status !== 'none') return;
+            if (!e) return;
             const agora = new Date();
             const novos = [...e.checkpoints];
-            novos[stepIdx] = { ...novos[stepIdx], status, data: agora.toLocaleDateString('pt-BR'), hora: agora.toLocaleTimeString('pt-BR'), timestamp: agora.getTime() };
+            novos[stepIdx] = { 
+                ...novos[stepIdx], 
+                status, 
+                data: agora.toLocaleDateString('pt-BR'), 
+                hora: agora.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit', second:'2-digit'}), 
+                timestamp: agora.getTime() 
+            };
             await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'empresas', empFireId), { checkpoints: novos });
         };
 
@@ -469,80 +423,97 @@
             if(tab === 'lab') renderLab();
         };
 
-        window.updateDashboard = () => {
-            document.getElementById('dash-total').innerText = localDB.length;
-            document.getElementById('dash-concluidas').innerText = localDB.filter(e => e.checkpoints[ETAPAS.length-1].status !== 'none').length;
-            const recent = document.getElementById('dash-recent-list');
-            recent.innerHTML = localDB.slice(0,5).map(e => `
-                <div class="p-4 bg-white/5 rounded border border-white/5 flex justify-between items-center">
-                    <span class="text-[10px] font-black uppercase text-white">${e.emp_razao}</span>
-                    <span class="text-[9px] text-gray-500 font-mono">${e.rep_cpf}</span>
-                </div>
-            `).join('');
-        };
-
         window.renderLab = () => {
             const container = document.getElementById('laboratorioGrid');
             container.innerHTML = localDB.map(e => `
-                <div class="glass-card p-6 rounded-xl border-l-4 border-red-600">
-                    <div class="flex justify-between mb-4">
-                        <h3 class="text-xs font-black text-white uppercase italic">${e.emp_razao}</h3>
-                        <button onclick="openProntuario('${e.fireId}')" class="text-[9px] text-red-500 font-black uppercase">Abrir Dossiê</button>
+                <div class="glass-card p-6 rounded-xl border-l-4 border-red-600 relative">
+                    <div class="flex justify-between mb-6">
+                        <div><h3 class="text-base font-black text-white uppercase italic">${e.emp_razao}</h3></div>
+                        <button onclick="openProntuario('${e.fireId}')" class="text-[9px] bg-red-600 text-white px-4 py-1.5 rounded font-black uppercase">Abrir Dossiê</button>
                     </div>
-                    <div class="pipeline-wrapper relative" id="wrapper-${e.fireId}">
+                    <div class="pipeline-wrapper" id="wrapper-${e.fireId}">
                         <svg class="connector-layer" id="svg-${e.fireId}"></svg>
                         <div class="flex justify-between">
                             ${e.checkpoints.map((c, i) => `
-                                <div class="step-group">
-                                    <span class="text-[7px] font-black uppercase mb-2 text-gray-600">${c.nome}</span>
+                                <div class="step-group" id="step-${e.fireId}-${i}">
+                                    <span class="text-[8px] font-black uppercase mb-3 text-zinc-500">${c.nome}</span>
                                     <div class="status-options">
-                                        <div onclick="setStatus('${e.fireId}', ${i}, '${c.status === 'none' ? 'success' : c.status}')" class="dot ${c.status === 'success' ? 'dot-green selected' : (c.status === 'warning' ? 'dot-yellow selected' : (c.status === 'error' ? 'dot-red selected' : 'bg-zinc-800'))}"></div>
+                                        <div onclick="setStatus('${e.fireId}', ${i}, 'success')" class="dot dot-green ${c.status === 'success' ? 'selected' : ''}" id="dot-${e.fireId}-${i}-success"></div>
+                                        <div onclick="setStatus('${e.fireId}', ${i}, 'warning')" class="dot dot-yellow ${c.status === 'warning' ? 'selected' : ''}" id="dot-${e.fireId}-${i}-warning"></div>
+                                        <div onclick="setStatus('${e.fireId}', ${i}, 'error')" class="dot dot-red ${c.status === 'error' ? 'selected' : ''}" id="dot-${e.fireId}-${i}-error"></div>
                                     </div>
+                                    ${c.status !== 'none' ? `<div class="timestamp-badge"><span>${c.data}</span><span class="time">${c.hora}</span></div>` : '<div class="h-[36px]"></div>'}
                                 </div>
                             `).join('')}
                         </div>
                     </div>
                 </div>
             `).join('');
+            localDB.forEach(drawLines);
         };
+
+        function drawLines(e) {
+            const svg = document.getElementById(`svg-${e.fireId}`);
+            const wrapper = document.getElementById(`wrapper-${e.fireId}`);
+            if(!svg || !wrapper) return; svg.innerHTML = '';
+            const rect = wrapper.getBoundingClientRect();
+            for(let i = 0; i < e.checkpoints.length - 1; i++){
+                const cur = e.checkpoints[i], nxt = e.checkpoints[i+1];
+                if(cur.status !== 'none' && nxt.status !== 'none'){
+                    const d1 = document.getElementById(`dot-${e.fireId}-${i}-${cur.status}`);
+                    const d2 = document.getElementById(`dot-${e.fireId}-${i+1}-${nxt.status}`);
+                    if(d1 && d2){
+                        const b1 = d1.getBoundingClientRect(), b2 = d2.getBoundingClientRect();
+                        const x1 = b1.left - rect.left + b1.width/2, y1 = b1.top - rect.top + b1.height/2;
+                        const x2 = b2.left - rect.left + b2.width/2, y2 = b2.top - rect.top + b2.height/2;
+                        const line = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                        line.setAttribute("d", `M ${x1} ${y1} C ${x1 + (x2-x1)/2} ${y1}, ${x1 + (x2-x1)/2} ${y2}, ${x2} ${y2}`);
+                        line.setAttribute("class", "path-active"); line.setAttribute("stroke", "#ef4444"); line.setAttribute("opacity", "0.4");
+                        svg.appendChild(line);
+                    }
+                }
+            }
+        }
 
         window.openProntuario = (fireId) => {
             const e = localDB.find(x => x.fireId === fireId);
             if(!e) return;
+            currentEditingFireId = fireId;
+            
+            // Reset modal state
+            document.getElementById('btn-edit-dossie').classList.remove('hidden');
+            document.getElementById('btn-save-dossie').classList.add('hidden');
 
             const modal = document.getElementById('modalContent');
             modal.innerHTML = `
-                <!-- COLUNA 1: DADOS DO REPRESENTANTE -->
-                <div class="space-y-6">
+                <div class="space-y-8">
                     <div>
                         <h3 class="dossie-section-title">Dados do Representante</h3>
-                        <div class="space-y-3">
-                            ${renderDossieField("Nome Completo", e.rep_nome)}
-                            ${renderDossieField("CPF", e.rep_cpf)}
-                            ${renderDossieField("E-mail", e.rep_email)}
-                            ${renderDossieField("Telefone / WhatsApp", e.rep_tel)}
-                            ${renderDossieField("Data de Nascimento", e.rep_nasc)}
-                            ${renderDossieField("Endereço / Localização", e.rep_endereco)}
+                        <div class="grid gap-4">
+                            ${renderField("Nome Completo", e.rep_nome, 'rep_nome')}
+                            ${renderField("CPF", e.rep_cpf, 'rep_cpf')}
+                            ${renderField("Nascimento", e.rep_nasc, 'rep_nasc', 'date')}
+                            ${renderField("E-mail de Contato", e.rep_email, 'rep_email')}
+                            ${renderField("Telefone / WhatsApp", e.rep_tel, 'rep_tel')}
+                            ${renderField("Endereço Completo", e.rep_endereco, 'rep_endereco', 'textarea')}
                         </div>
                     </div>
                 </div>
-
-                <!-- COLUNA 2: DADOS DA EMPRESA E ACESSOS -->
-                <div class="space-y-6">
+                <div class="space-y-8">
                     <div>
-                        <h3 class="dossie-section-title">Dados da Empresa</h3>
-                        <div class="space-y-3">
-                            ${renderDossieField("Razão Social", e.emp_razao)}
-                            ${renderDossieField("CNPJ", e.emp_cnpj)}
-                            ${renderDossieField("Senha GOV.br", e.gov_senha)}
+                        <h3 class="dossie-section-title">Informações Jurídicas</h3>
+                        <div class="grid gap-4">
+                            ${renderField("Razão Social", e.emp_razao, 'emp_razao')}
+                            ${renderField("CNPJ", e.emp_cnpj, 'emp_cnpj')}
+                            ${renderField("Senha GOV.br", e.gov_senha, 'gov_senha')}
                         </div>
                     </div>
                     <div>
-                        <h3 class="dossie-section-title">Protocolos Cloud</h3>
-                        <div class="space-y-3">
-                            ${renderDossieField("Protocolo JUCEMG", e.prot_jucemg)}
-                            ${renderDossieField("Protocolo RECEITA", e.prot_receita)}
-                            ${renderDossieField("Protocolo CT SOCIAL", e.prot_social)}
+                        <h3 class="dossie-section-title">Protocolos Digitais</h3>
+                        <div class="grid gap-4">
+                            ${renderField("Protocolo JUCEMG", e.prot_jucemg, 'prot_jucemg')}
+                            ${renderField("Protocolo RECEITA", e.prot_receita, 'prot_receita')}
+                            ${renderField("Protocolo CT SOCIAL", e.prot_social, 'prot_social')}
                         </div>
                     </div>
                 </div>
@@ -550,42 +521,108 @@
             document.getElementById('modalProntuario').classList.remove('hidden');
         };
 
-        function renderDossieField(label, value) {
-            const valDisplay = value && value.trim() !== "" ? value : "NÃO INFORMADO";
-            const isMissing = !value || value.trim() === "";
-            
+        function renderField(label, value, fieldId, type = 'text') {
             return `
-                <div class="group bg-zinc-900/40 border border-white/5 p-3 rounded hover:border-red-600/30 transition-all flex justify-between items-center">
-                    <div class="overflow-hidden mr-4">
-                        <p class="text-[8px] font-black text-gray-500 uppercase mb-1">${label}</p>
-                        <p class="text-[11px] font-mono ${isMissing ? 'text-gray-700 italic' : 'text-white'} break-all">${valDisplay}</p>
+                <div class="bg-zinc-900/50 p-4 rounded border border-white/5 group flex justify-between items-center">
+                    <div class="truncate w-full pr-4">
+                        <p class="text-[8px] font-black text-gray-500 uppercase">${label}</p>
+                        <div class="field-value-container" data-field="${fieldId}">
+                            <p class="text-[12px] font-mono text-white mt-1 truncate field-text">${value || '---'}</p>
+                            ${type === 'textarea' ? 
+                                `<textarea class="hidden edit-input mt-1 h-16 resize-none" data-id="${fieldId}">${value || ''}</textarea>` :
+                                `<input type="${type}" class="hidden edit-input mt-1" data-id="${fieldId}" value="${value || ''}">`
+                            }
+                        </div>
                     </div>
-                    ${!isMissing ? `
-                    <button onclick="copyToClipboard('${value}', this)" class="text-gray-600 hover:text-red-500 transition-colors px-2" title="Copiar">
-                        <i class="far fa-copy text-sm"></i>
-                    </button>` : ''}
+                    <button onclick="copyToClipboard('${value}', this)" class="btn-copy-field text-gray-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all">
+                        <i class="far fa-copy"></i>
+                    </button>
                 </div>
             `;
         }
 
+        document.getElementById('btn-edit-dossie').onclick = () => {
+            document.getElementById('btn-edit-dossie').classList.add('hidden');
+            document.getElementById('btn-save-dossie').classList.remove('hidden');
+            
+            document.querySelectorAll('.field-text').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.btn-copy-field').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.edit-input').forEach(el => el.classList.remove('hidden'));
+        };
+
+        document.getElementById('btn-save-dossie').onclick = async () => {
+            if(!currentEditingFireId) return;
+
+            const updates = {};
+            document.querySelectorAll('.edit-input').forEach(input => {
+                updates[input.dataset.id] = input.value;
+            });
+
+            try {
+                const btnSave = document.getElementById('btn-save-dossie');
+                btnSave.innerText = "Salvando...";
+                btnSave.disabled = true;
+
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'empresas', currentEditingFireId), updates);
+                
+                btnSave.innerText = "Salvo!";
+                setTimeout(() => {
+                    btnSave.innerText = "Salvar Alterações";
+                    btnSave.disabled = false;
+                    openProntuario(currentEditingFireId); // Recarrega visualização
+                }, 1000);
+
+            } catch (error) {
+                console.error("Erro ao salvar:", error);
+                document.getElementById('btn-save-dossie').innerText = "Erro ao Salvar";
+            }
+        };
+
         window.copyToClipboard = (text, btn) => {
             const el = document.createElement('textarea'); el.value = text; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el);
-            const icon = btn.innerHTML; btn.innerHTML = '<i class="fas fa-check text-green-500"></i>';
-            setTimeout(() => btn.innerHTML = icon, 2000);
+            btn.innerHTML = '<i class="fas fa-check text-green-500"></i>'; setTimeout(() => btn.innerHTML = '<i class="far fa-copy"></i>', 2000);
         };
 
-        window.closeModal = () => document.getElementById('modalProntuario').classList.add('hidden');
-        window.renderListaEmpresas = () => {
-            const container = document.getElementById('listaEmpresas');
-            document.getElementById('counter').innerText = localDB.length;
-            container.innerHTML = localDB.map(e => `
-                <div onclick="openProntuario('${e.fireId}')" class="p-3 bg-white/[0.03] border border-white/5 rounded hover:border-red-600/50 transition-all cursor-pointer">
-                    <h4 class="text-[10px] font-black text-white uppercase truncate">${e.emp_razao}</h4>
-                    <p class="text-[8px] text-gray-600 font-bold mt-1 uppercase">${e.rep_nome}</p>
+        window.closeModal = () => {
+            document.getElementById('modalProntuario').classList.add('hidden');
+            currentEditingFireId = null;
+        };
+        
+        function updateDashboard() {
+            document.getElementById('dash-total').innerText = localDB.length;
+            const concluidas = localDB.filter(e => e.checkpoints[e.checkpoints.length - 1].status === 'success').length;
+            document.getElementById('dash-concluidas').innerText = concluidas;
+            
+            // Cálculo fictício de segurança baseado em campos preenchidos
+            let totalFields = 0;
+            let filledFields = 0;
+            localDB.forEach(e => {
+                const fields = ['rep_nome', 'rep_cpf', 'emp_razao', 'emp_cnpj', 'gov_senha'];
+                fields.forEach(f => {
+                    totalFields++;
+                    if(e[f]) filledFields++;
+                });
+            });
+            const avg = totalFields > 0 ? Math.round((filledFields / totalFields) * 100) : 0;
+            document.getElementById('dash-security-avg').innerText = avg + '%';
+
+            document.getElementById('dash-recent-list').innerHTML = localDB.slice(0, 5).map(e => `
+                <div class="p-4 bg-white/5 rounded border border-white/5 flex justify-between items-center">
+                    <span class="text-[10px] font-black uppercase text-white italic">${e.emp_razao}</span>
+                    <span class="text-[9px] text-red-500 font-mono">${e.id}</span>
                 </div>
             `).join('');
-        };
+        }
 
+        function renderListaEmpresas() {
+            document.getElementById('counter').innerText = localDB.length;
+            document.getElementById('listaEmpresas').innerHTML = localDB.map(e => `
+                <div onclick="openProntuario('${e.fireId}')" class="p-3 bg-white/5 border border-white/5 rounded hover:border-red-600 cursor-pointer transition-all">
+                    <h4 class="text-[10px] font-black uppercase truncate">${e.emp_razao}</h4>
+                    <p class="text-[8px] text-gray-500 mt-1 uppercase">${e.rep_nome}</p>
+                </div>
+            `).join('');
+        }
     </script>
 </body>
 </html>
