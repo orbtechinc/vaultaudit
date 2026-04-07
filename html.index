@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CNPJ Analytics | Trilha de Auditoria Cloud</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&family=JetBrains+Mono:wght@700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #030303;
+            color: #e5e7eb;
+            overflow-x: hidden;
+        }
+
+        .glass-card {
+            background: rgba(15, 15, 15, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .input-dark {
+            background: #0a0a0a !important;
+            border: 1px solid #1a1a1a !important;
+            color: #fff !important;
+            font-size: 0.75rem;
+            height: 38px;
+            transition: border-color 0.2s;
+        }
+
+        .input-dark:focus {
+            border-color: #ef4444 !important;
+            outline: none;
+        }
+
+        .section-header {
+            font-size: 0.6rem;
+            font-weight: 900;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding: 4px 10px;
+            color: #fff;
+            margin-bottom: 8px;
+            border-radius: 2px;
+        }
+
+        .header-blue { background-color: #0000FF; }
+        .header-orange { background-color: #FF8C00; }
+        .header-purple { background-color: #4B0082; }
+        .header-red { background-color: #FF0000; }
+        .header-green { background-color: #008000; }
+
+        /* Login Layout */
+        #login-screen {
+            background: radial-gradient(circle at center, #111 0%, #000 100%);
+        }
+
+        .pipeline-wrapper {
+            position: relative;
+            padding: 40px 0;
+            overflow-x: auto;
+            min-height: 240px;
+        }
+
+        .step-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 110px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .status-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .dot-green { background: #16a34a; }
+        .dot-yellow { background: #ca8a04; }
+        .dot-red { background: #dc2626; }
+
+        .selected .dot-green { box-shadow: 0 0 15px #16a34a; border-color: white; }
+        .selected .dot-yellow { box-shadow: 0 0 15px #ca8a04; border-color: white; }
+        .selected .dot-red { box-shadow: 0 0 15px #dc2626; border-color: white; }
+
+        .connector-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .path-active {
+            stroke-width: 2.5;
+            transition: all 0.5s ease;
+            fill: none;
+        }
+
+        .tab-btn.active {
+            color: #ef4444;
+            border-bottom: 2px solid #ef4444;
+        }
+
+        .field-label {
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #666;
+            margin-bottom: 2px;
+            display: block;
+        }
+
+        .timestamp-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 8px;
+            background: rgba(255,255,255,0.05);
+            padding: 6px 8px;
+            border-radius: 4px;
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            margin-top: 10px;
+            letter-spacing: 0.05em;
+            text-align: center;
+            line-height: 1.4;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 85px;
+        }
+
+        .timestamp-badge span.time {
+            color: #ffffff;
+            font-weight: bold;
+        }
+
+        .stat-card {
+            border-left: 3px solid #ef4444;
+            transition: transform 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            background: rgba(255,255,255,0.02);
+        }
+
+        .security-tag {
+            font-size: 8px;
+            padding: 2px 6px;
+            border-radius: 2px;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+
+        #connection-status {
+            font-size: 9px;
+            padding: 4px 8px;
+            border-radius: 100px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .status-online { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
+        .status-offline { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+
+        ::-webkit-scrollbar { height: 4px; width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #222; border-radius: 10px; }
+
+        .hidden-auth { display: none !important; }
+    </style>
+</head>
+<body class="bg-black">
+
+    <!-- TELA DE LOGIN -->
+    <div id="login-screen" class="fixed inset-0 z-[1000] flex items-center justify-center p-6">
+        <div class="glass-card w-full max-w-md p-8 rounded-2xl shadow-2xl border-t-4 border-red-600">
+            <div class="flex flex-col items-center mb-8">
+                <div class="bg-red-600 p-4 rounded-xl mb-4 shadow-[0_0_20px_rgba(220,38,38,0.3)]">
+                    <i class="fas fa-fingerprint text-white text-3xl"></i>
+                </div>
+                <h1 class="text-2xl font-black tracking-tighter uppercase text-white">Vault<span class="text-red-600">Audit</span></h1>
+                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-[0.2em] mt-2">Acesso Restrito ao Terminal</p>
+            </div>
+
+            <div id="login-error" class="hidden mb-4 p-3 bg-red-600/10 border border-red-600/50 rounded text-red-500 text-[10px] font-black uppercase text-center">
+                Credenciais Inválidas
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="field-label">ID de Operador (Email)</label>
+                    <input type="email" id="login-email" class="input-dark w-full p-3 rounded" placeholder="exemplo@vault.com">
+                </div>
+                <div>
+                    <label class="field-label">Chave de Segurança (Senha)</label>
+                    <input type="password" id="login-password" class="input-dark w-full p-3 rounded" placeholder="••••••••">
+                </div>
+                <button onclick="handleLogin()" id="login-btn" class="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded font-black text-xs uppercase tracking-widest transition-all mt-4 flex items-center justify-center gap-2">
+                    Autenticar <i class="fas fa-chevron-right text-[10px]"></i>
+                </button>
+                <div class="flex justify-between items-center mt-6 pt-6 border-t border-white/5">
+                    <span class="text-[8px] font-black text-gray-700 uppercase">Sistema de Auditoria v4.2</span>
+                    <button onclick="handleGuestLogin()" class="text-[8px] font-black text-gray-500 uppercase hover:text-white transition-colors">Acesso Visitante</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTEÚDO PRINCIPAL (OCULTO ATÉ LOGIN) -->
+    <div id="app-content" class="hidden-auth">
+        <nav class="border-b border-white/5 bg-black sticky top-0 z-[100]">
+            <div class="max-w-[1600px] mx-auto px-6 py-4 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="bg-red-600 p-2 rounded-sm">
+                        <i class="fas fa-fingerprint text-white"></i>
+                    </div>
+                    <h1 class="text-xl font-black tracking-tighter uppercase">Vault<span class="text-red-600">Audit</span></h1>
+                </div>
+                <div class="flex items-center gap-6">
+                    <div id="connection-status" class="status-offline font-black uppercase tracking-widest">
+                        <i class="fas fa-circle text-[6px]"></i> Desconectado
+                    </div>
+                    <button onclick="handleLogout()" class="text-gray-500 hover:text-white transition-colors">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <main class="max-w-[1600px] mx-auto px-6 py-6">
+            
+            <div class="flex gap-8 mb-6 border-b border-white/5">
+                <button onclick="switchTab('dash')" id="tab-dash" class="tab-btn active pb-4 text-[11px] font-black uppercase tracking-widest transition-all">Painel de Controle</button>
+                <button onclick="switchTab('docs')" id="tab-docs" class="tab-btn pb-4 text-[11px] font-black uppercase tracking-widest text-gray-600 transition-all">Registro de Entrada</button>
+                <button onclick="switchTab('lab')" id="tab-lab" class="tab-btn pb-4 text-[11px] font-black uppercase tracking-widest text-gray-600 transition-all">Pipeline de Auditoria</button>
+            </div>
+
+            <!-- ABA DASHBOARD -->
+            <div id="content-dash" class="tab-content">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="glass-card p-6 rounded-xl stat-card">
+                        <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Total de Cadastros</p>
+                        <h2 id="dash-total" class="text-4xl font-black text-white italic">0</h2>
+                        <p class="text-[9px] text-gray-600 mt-2 font-bold uppercase">Empresas no Cloud</p>
+                    </div>
+                    <div class="glass-card p-6 rounded-xl stat-card border-l-green-600">
+                        <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Auditorias Finalizadas</p>
+                        <h2 id="dash-concluidas" class="text-4xl font-black text-green-500 italic">0</h2>
+                        <p class="text-[9px] text-gray-600 mt-2 font-bold uppercase">Contas 100% encerradas</p>
+                    </div>
+                    <div class="glass-card p-6 rounded-xl stat-card border-l-yellow-600">
+                        <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Índice de Segurança Médio</p>
+                        <h2 id="dash-security-avg" class="text-4xl font-black text-blue-500 italic">0%</h2>
+                        <p class="text-[9px] text-gray-600 mt-2 font-bold uppercase">Score de confiabilidade</p>
+                    </div>
+                </div>
+
+                <div class="glass-card rounded-xl border border-white/5 p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xs font-black uppercase text-white tracking-widest">Monitoramento Cloud em Tempo Real</h3>
+                        <div class="flex gap-4 text-[9px] font-black uppercase">
+                            <span class="text-green-500"><i class="fas fa-shield-alt mr-1"></i> Segura</span>
+                            <span class="text-yellow-500"><i class="fas fa-exclamation-triangle mr-1"></i> Vigilância</span>
+                            <span class="text-red-500"><i class="fas fa-skull-crossbones mr-1"></i> Risco</span>
+                        </div>
+                    </div>
+                    <div id="dash-recent-list" class="space-y-4"></div>
+                </div>
+            </div>
+
+            <!-- ABA REGISTRO -->
+            <div id="content-docs" class="tab-content hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div class="lg:col-span-9">
+                        <div class="glass-card p-6 rounded-xl border-t-2 border-red-600">
+                            <form id="empresaForm" class="grid grid-cols-2 gap-x-8 gap-y-4">
+                                <div class="space-y-4">
+                                    <div class="flex flex-col"><label class="field-label">Nome Representante</label><input type="text" id="rep_nome" class="input-dark w-full p-2 rounded font-bold"></div>
+                                    <div class="section-header header-blue">Informações Pessoais</div>
+                                    <div><label class="field-label">CPF</label><input type="text" id="rep_cpf" class="input-dark w-full p-2 rounded"></div>
+                                    <div class="section-header header-orange">Comunicação</div>
+                                    <div><label class="field-label">E-mail</label><input type="email" id="rep_email" class="input-dark w-full p-2 rounded"></div>
+                                    <div class="section-header header-purple">Contato</div>
+                                    <div><label class="field-label">Telefone</label><input type="text" id="rep_tel" class="input-dark w-full p-2 rounded"></div>
+                                    <div class="section-header header-red">Localização Empresa</div>
+                                    <div><label class="field-label">CEP Empresa / Endereço</label><textarea id="rep_endereco" class="input-dark w-full p-2 rounded h-16 resize-none"></textarea></div>
+                                    <div class="section-header header-green">Nascimento</div>
+                                    <div><label class="field-label">Data de Nasc.</label><input type="date" id="rep_nasc" class="input-dark w-full p-2 rounded"></div>
+                                </div>
+                                <div class="space-y-4">
+                                    <div class="flex flex-col"><label class="field-label">Razão Social</label><input type="text" id="emp_razao" class="input-dark w-full p-2 rounded font-bold"></div>
+                                    <div class="section-header header-blue">Acesso Gov</div>
+                                    <div><label class="field-label">Senha GOV</label><input type="text" id="gov_senha" class="input-dark w-full p-2 rounded"></div>
+                                    <div class="section-header header-orange">Protocolo Junta</div>
+                                    <div><label class="field-label">Protocolo JUCEMG</label><input type="text" id="prot_jucemg" class="input-dark w-full p-2 rounded"></div>
+                                    <div class="section-header header-purple">Protocolo Federal</div>
+                                    <div><label class="field-label">Protocolo RECEITA</label><input type="text" id="prot_receita" class="input-dark w-full p-2 rounded"></div>
+                                    <div class="section-header header-red">Documentação</div>
+                                    <div><label class="field-label">CNPJ</label><input type="text" id="emp_cnpj" class="input-dark w-full p-2 rounded"></div>
+                                    <div class="section-header header-green">Social</div>
+                                    <div><label class="field-label">Protocolo CT SOCIAL</label><input type="text" id="prot_social" class="input-dark w-full p-2 rounded"></div>
+                                </div>
+                                <div class="col-span-2 flex justify-end mt-4 pt-4 border-t border-white/5">
+                                    <button type="button" onclick="salvarCadastro()" class="bg-red-600 hover:bg-red-700 text-white px-12 py-3 rounded font-black text-xs uppercase tracking-widest transition-all">Salvar no Cloud</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-3">
+                        <div class="glass-card rounded-xl overflow-hidden flex flex-col h-full max-h-[850px]">
+                            <div class="p-4 bg-white/5 border-b border-white/5 flex justify-between items-center">
+                                <span class="text-[9px] font-black uppercase text-gray-500">Fluxo Operacional</span>
+                                <span id="counter" class="bg-red-600 text-white text-[9px] px-2 py-0.5 rounded font-bold">0</span>
+                            </div>
+                            <div id="listaEmpresas" class="overflow-y-auto p-2 space-y-2"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ABA PIPELINE -->
+            <div id="content-lab" class="tab-content hidden">
+                <div id="laboratorioGrid" class="space-y-6"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL PRONTUARIO -->
+    <div id="modalProntuario" class="fixed inset-0 z-[200] hidden flex items-center justify-center p-4 bg-black/95 backdrop-blur-md">
+        <div class="glass-card w-full max-w-5xl rounded-xl border border-white/10 shadow-2xl overflow-hidden">
+            <div class="p-4 bg-red-600 flex justify-between items-center">
+                <h2 class="text-xs font-black text-white uppercase tracking-widest italic">Terminal de Dados Operacionais</h2>
+                <button onclick="closeModal()" class="text-white hover:scale-110"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="modalContent" class="p-6 grid grid-cols-2 gap-8 max-h-[80vh] overflow-y-auto bg-black"></div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+        import { getFirestore, collection, doc, setDoc, updateDoc, onSnapshot, query, addDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+
+        const myFirebaseConfig = {
+            apiKey: "AIzaSyDAPqeKshgpHpj003XTjklnRUfnga42FSM",
+            authDomain: "sureappfinal.firebaseapp.com",
+            projectId: "sureappfinal",
+            storageBucket: "sureappfinal.firebasestorage.app",
+            messagingSenderId: "1028249276355",
+            appId: "1:1028249276355:web:a96d8ddadf32aa44ef7776",
+            measurementId: "G-CY4G6JNRFP"
+        };
+
+        const configToUse = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : myFirebaseConfig;
+        
+        const app = initializeApp(configToUse);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'sureappfinal-default';
+
+        const ETAPAS = ["Gov.br", "Junta", "Receita", "Contrato", "CNPJ", "Conta PF", "Conta PJ", "PIX", "Pagto", "Boleto", "Saque", "Finalizada"];
+        const PESO_DOBRO = ["Pagto", "Boleto", "Finalizada"];
+
+        let localDB = [];
+        let currentUser = null;
+        let unsubscribeSnap = null;
+
+        // AUTH HANDLERS
+        window.handleLogin = async function() {
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-password').value;
+            const btn = document.getElementById('login-btn');
+            const err = document.getElementById('login-error');
+
+            if(!email || !pass) return;
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Validando...';
+            err.classList.add('hidden');
+
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+            } catch (error) {
+                console.error(error);
+                err.classList.remove('hidden');
+                btn.disabled = false;
+                btn.innerHTML = 'Autenticar <i class="fas fa-chevron-right text-[10px]"></i>';
+            }
+        };
+
+        window.handleGuestLogin = async function() {
+            try {
+                await signInAnonymously(auth);
+            } catch (error) {
+                console.error("Erro anônimo:", error);
+            }
+        };
+
+        window.handleLogout = async function() {
+            if(unsubscribeSnap) unsubscribeSnap();
+            await signOut(auth);
+            location.reload();
+        };
+
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            const loginScreen = document.getElementById('login-screen');
+            const appContent = document.getElementById('app-content');
+            const statusEl = document.getElementById('connection-status');
+
+            if (user) {
+                loginScreen.classList.add('hidden');
+                appContent.classList.remove('hidden-auth');
+                statusEl.innerHTML = '<i class="fas fa-circle text-[6px]"></i> Cloud Online';
+                statusEl.className = 'status-online font-black uppercase tracking-widest';
+                iniciarSincronizacao();
+            } else {
+                loginScreen.classList.remove('hidden');
+                appContent.classList.add('hidden-auth');
+                statusEl.innerHTML = '<i class="fas fa-circle text-[6px]"></i> Desconectado';
+                statusEl.className = 'status-offline font-black uppercase tracking-widest';
+            }
+        });
+
+        function iniciarSincronizacao() {
+            if (!currentUser) return;
+            const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'empresas'));
+            
+            if(unsubscribeSnap) unsubscribeSnap();
+            
+            unsubscribeSnap = onSnapshot(q, (snapshot) => {
+                localDB = [];
+                snapshot.forEach((doc) => { localDB.push({ fireId: doc.id, ...doc.data() }); });
+                localDB.sort((a, b) => b.id - a.id);
+                renderListaEmpresas();
+                updateDashboard();
+                if (!document.getElementById('content-lab').classList.contains('hidden')) renderLab();
+            }, (error) => { console.error("Erro ao sincronizar:", error); });
+        }
+
+        window.salvarCadastro = async function() {
+            if (!currentUser) return;
+            const data = {
+                id: Date.now(),
+                rep_nome: document.getElementById('rep_nome').value,
+                rep_cpf: document.getElementById('rep_cpf').value,
+                rep_email: document.getElementById('rep_email').value,
+                rep_tel: document.getElementById('rep_tel').value,
+                rep_endereco: document.getElementById('rep_endereco').value,
+                rep_nasc: document.getElementById('rep_nasc').value,
+                emp_razao: document.getElementById('emp_razao').value,
+                gov_senha: document.getElementById('gov_senha').value,
+                prot_jucemg: document.getElementById('prot_jucemg').value,
+                prot_receita: document.getElementById('prot_receita').value,
+                emp_cnpj: document.getElementById('emp_cnpj').value,
+                prot_social: document.getElementById('prot_social').value,
+                checkpoints: ETAPAS.map(nome => ({ nome, status: 'none', data: null, hora: null, timestamp: null }))
+            };
+            if(!data.emp_razao) return;
+            try {
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'empresas'), data);
+                document.getElementById('empresaForm').reset();
+                switchTab('dash');
+            } catch (err) { console.error("Erro ao salvar:", err); }
+        };
+
+        window.setStatus = async function(empFireId, stepIdx, status) {
+            if (!currentUser) return;
+            const e = localDB.find(x => x.fireId === empFireId);
+            if (!e || e.checkpoints[stepIdx].status !== 'none') return;
+            const agora = new Date();
+            const novosCheckpoints = [...e.checkpoints];
+            novosCheckpoints[stepIdx] = {
+                ...novosCheckpoints[stepIdx],
+                status: status,
+                data: agora.toLocaleDateString('pt-BR'),
+                hora: agora.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit', second:'2-digit'}),
+                timestamp: agora.getTime()
+            };
+            try {
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'empresas', empFireId), { checkpoints: novosCheckpoints });
+            } catch (err) { console.error("Erro ao atualizar status:", err); }
+        };
+
+        window.switchTab = function(tab) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active', 'text-white'));
+            document.getElementById(`content-${tab}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-${tab}`);
+            activeBtn.classList.add('active', 'text-white');
+            if(tab === 'lab') renderLab();
+            if(tab === 'dash') updateDashboard();
+        };
+
+        function calcularAnalise(e) {
+            let score = 0, maxPossivel = 0;
+            e.checkpoints.forEach(c => {
+                const peso = PESO_DOBRO.includes(c.nome) ? 2 : 1;
+                maxPossivel += (5 * peso);
+                if (c.status === 'success') score += (5 * peso);
+                else if (c.status === 'warning') score += (3 * peso);
+                else if (c.status === 'error') score += (1 * peso);
+            });
+            const cpPJ = e.checkpoints[ETAPAS.indexOf("Conta PJ")];
+            let diasVida = 0, statusLongevidade = "N/A", corLongevidade = "text-gray-600";
+            if (cpPJ?.timestamp) {
+                diasVida = Math.floor(Math.abs(Date.now() - cpPJ.timestamp) / (1000 * 60 * 60 * 24));
+                if (diasVida >= 15) { statusLongevidade = "Excelente"; corLongevidade = "text-green-500"; }
+                else if (diasVida >= 5) { statusLongevidade = "Médio"; corLongevidade = "text-yellow-500"; }
+                else { statusLongevidade = "Alerta"; corLongevidade = "text-red-600"; }
+            }
+            const percEficiencia = maxPossivel > 0 ? Math.round((score / maxPossivel) * 100) : 0;
+            let rating = "Vigilância", corRating = "bg-yellow-500/20 text-yellow-500 border-yellow-500/50";
+            if (percEficiencia >= 80) { rating = "Segura"; corRating = "bg-green-500/20 text-green-500 border-green-500/50"; }
+            else if (percEficiencia < 50) { rating = "Risco"; corRating = "bg-red-500/20 text-red-500 border-red-500/50"; }
+            return { score, percEficiencia, diasVida, statusLongevidade, corLongevidade, rating, corRating };
+        }
+
+        window.updateDashboard = function() {
+            document.getElementById('dash-total').innerText = localDB.length;
+            document.getElementById('dash-concluidas').innerText = localDB.filter(e => e.checkpoints[ETAPAS.length - 1].status !== 'none').length;
+            let sumSec = 0; localDB.forEach(e => sumSec += calcularAnalise(e).percEficiencia);
+            document.getElementById('dash-security-avg').innerText = (localDB.length > 0 ? Math.round(sumSec/localDB.length) : 0) + "%";
+            const recentList = document.getElementById('dash-recent-list');
+            if(localDB.length === 0) { recentList.innerHTML = `<div class="text-[10px] text-gray-700 font-bold uppercase italic text-center py-10">Vazio...</div>`; return; }
+            recentList.innerHTML = localDB.slice(0, 8).map(e => {
+                const analise = calcularAnalise(e);
+                return `<div class="flex items-center justify-between p-4 bg-white/[0.02] rounded-lg border border-white/5 hover:bg-white/[0.04] transition-all">
+                    <div class="flex items-center gap-4 flex-1">
+                        <div class="w-1.5 h-8 ${analise.rating === 'Segura' ? 'bg-green-500' : (analise.rating === 'Risco' ? 'bg-red-500' : 'bg-yellow-500')} rounded-full"></div>
+                        <div><h4 class="text-[11px] font-black text-white uppercase italic">${e.emp_razao}</h4>
+                        <div class="flex gap-2 mt-1"><span class="security-tag border ${analise.corRating}">${analise.rating}</span></div></div>
+                    </div>
+                    <div class="w-32"><div class="flex justify-between mb-1"><span class="text-[8px] font-black text-gray-500 uppercase">Integridade</span><span class="text-[9px] font-black text-white italic">${analise.percEficiencia}%</span></div>
+                    <div class="w-full h-1.5 bg-black rounded-full overflow-hidden border border-white/5"><div class="h-full bg-blue-600" style="width: ${analise.percEficiencia}%"></div></div></div>
+                </div>`;
+            }).join('');
+        };
+
+        window.renderLab = function() {
+            const container = document.getElementById('laboratorioGrid');
+            if(localDB.length === 0) { container.innerHTML = `<div class="py-20 text-center text-gray-700 font-black uppercase text-xs italic">Nenhum registro.</div>`; return; }
+            container.innerHTML = localDB.map(e => {
+                const analise = calcularAnalise(e);
+                return `<div class="glass-card p-6 rounded-xl border-l-4 border-red-600 relative overflow-hidden">
+                    <div class="flex justify-between items-center mb-6"><div><h3 class="text-base font-black text-white uppercase italic">${e.emp_razao}</h3><p class="text-[9px] text-gray-500 uppercase font-bold">Eficiência: ${analise.percEficiencia}%</p></div>
+                    <button onclick="openProntuario('${e.fireId}')" class="text-[9px] bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white px-4 py-1.5 rounded font-black uppercase transition-all">Dossiê</button></div>
+                    <div class="pipeline-wrapper" id="wrapper-${e.fireId}"><svg class="connector-layer" id="svg-${e.fireId}"></svg>
+                    <div class="flex justify-between">${e.checkpoints.map((c, idx) => `<div class="step-group ${c.status !== 'none' ? 'locked selected' : ''}" id="step-${e.fireId}-${idx}"><div class="text-[8px] font-black uppercase mb-3 ${c.status !== 'none' ? 'text-white' : 'text-zinc-700'}">${c.nome}</div>
+                    <div class="status-options">
+                        ${(c.status === 'none' || c.status === 'success') ? `<div onclick="setStatus('${e.fireId}', ${idx}, 'success')" class="dot dot-green" id="dot-${e.fireId}-${idx}-success"></div>` : ''}
+                        ${(c.status === 'none' || c.status === 'warning') ? `<div onclick="setStatus('${e.fireId}', ${idx}, 'warning')" class="dot dot-yellow" id="dot-${e.fireId}-${idx}-warning"></div>` : ''}
+                        ${(c.status === 'none' || c.status === 'error') ? `<div onclick="setStatus('${e.fireId}', ${idx}, 'error')" class="dot dot-red" id="dot-${e.fireId}-${idx}-error"></div>` : ''}
+                    </div>${c.data ? `<div class="timestamp-badge"><span>${c.data}</span><span class="time">${c.hora}</span></div>` : `<div class="h-[36px]"></div>`}</div>`).join('')}</div></div></div>`
+            }).join('');
+            localDB.forEach(e => drawLines(e));
+        };
+
+        function drawLines(e) {
+            const svg = document.getElementById(`svg-${e.fireId}`);
+            const wrapper = document.getElementById(`wrapper-${e.fireId}`);
+            if(!svg || !wrapper) return; svg.innerHTML = '';
+            const rect = wrapper.getBoundingClientRect();
+            for(let i = 0; i < e.checkpoints.length - 1; i++) {
+                const current = e.checkpoints[i], next = e.checkpoints[i+1];
+                if(current.status === 'none' || next.status === 'none') continue;
+                const dotStart = document.getElementById(`dot-${e.fireId}-${i}-${current.status}`);
+                const dotEnd = document.getElementById(`dot-${e.fireId}-${i+1}-${next.status}`);
+                if(dotStart && dotEnd) {
+                    const b1 = dotStart.getBoundingClientRect(), b2 = dotEnd.getBoundingClientRect();
+                    const x1 = b1.left - rect.left + b1.width/2, y1 = b1.top - rect.top + b1.height/2;
+                    const x2 = b2.left - rect.left + b2.width/2, y2 = b2.top - rect.top + b2.height/2;
+                    const color = current.status === 'success' ? '#16a34a' : (current.status === 'warning' ? '#ca8a04' : '#dc2626');
+                    const line = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    line.setAttribute("d", `M ${x1} ${y1} C ${x1 + (x2-x1)/2} ${y1}, ${x1 + (x2-x1)/2} ${y2}, ${x2} ${y2}`);
+                    line.setAttribute("class", "path-active"); line.setAttribute("stroke", color); line.setAttribute("opacity", "0.4");
+                    svg.appendChild(line);
+                }
+            }
+        }
+
+        window.openProntuario = function(fireId) {
+            const e = localDB.find(x => x.fireId === fireId); if (!e) return;
+            document.getElementById('modalContent').innerHTML = `<div class="space-y-4">
+                <div class="p-3 bg-zinc-900 rounded border-l-2 border-white"><p class="text-[8px] font-black uppercase text-gray-500">Representante</p><p class="text-sm font-bold text-white">${e.rep_nome}</p></div>
+                ${renderField("CPF", e.rep_cpf)}${renderField("E-mail", e.rep_email)}${renderField("Telefone", e.rep_tel)}
+            </div><div class="space-y-4">
+                <div class="p-3 bg-zinc-900 rounded border-l-2 border-white"><p class="text-[8px] font-black uppercase text-gray-500">Empresa</p><p class="text-sm font-bold text-white">${e.emp_razao}</p></div>
+                ${renderField("Senha GOV", e.gov_senha)}${renderField("CNPJ", e.emp_cnpj)}
+            </div>`;
+            document.getElementById('modalProntuario').classList.remove('hidden');
+        };
+
+        function renderField(label, value) {
+            return `<div class="p-3 bg-zinc-900/50 rounded border border-white/5 flex items-center justify-between group">
+                <div class="flex-1 truncate"><p class="text-[8px] font-black text-gray-500 uppercase">${label}</p><p class="text-xs text-white font-mono truncate">${value || '---'}</p></div>
+                <button onclick="copyToClipboard('${value}', this)" class="ml-4 text-gray-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"><i class="far fa-copy text-sm"></i></button></div>`;
+        }
+
+        window.copyToClipboard = function(text, btn) {
+            const el = document.createElement('textarea'); el.value = text; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el);
+            btn.innerHTML = '<i class="fas fa-check text-green-500"></i>'; setTimeout(() => btn.innerHTML = '<i class="far fa-copy text-sm"></i>', 1500);
+        };
+
+        window.closeModal = function() { document.getElementById('modalProntuario').classList.add('hidden'); };
+
+        window.renderListaEmpresas = function() {
+            const container = document.getElementById('listaEmpresas');
+            document.getElementById('counter').innerText = localDB.length;
+            container.innerHTML = localDB.map(e => `<div onclick="openProntuario('${e.fireId}')" class="p-3 bg-white/[0.03] border border-white/5 rounded hover:border-red-600/50 transition-all cursor-pointer">
+                <h4 class="text-[10px] font-black text-white uppercase truncate">${e.emp_razao}</h4>
+                <p class="text-[8px] text-gray-600 font-bold mt-1 uppercase">${e.rep_nome}</p>
+            </div>`).join('');
+            updateDashboard();
+        };
+
+        window.addEventListener('resize', () => { if (!document.getElementById('content-lab').classList.contains('hidden')) renderLab(); });
+
+    </script>
+</body>
+</html>
