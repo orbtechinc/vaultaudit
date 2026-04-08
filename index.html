@@ -53,7 +53,6 @@
         .header-red { background-color: #FF0000; }
         .header-green { background-color: #008000; }
 
-        /* Login Layout */
         #login-screen {
             background: radial-gradient(circle at center, #111 0%, #000 100%);
         }
@@ -184,7 +183,6 @@
 
         .hidden-auth { display: none !important; }
 
-        /* Estilos Novos para Edição */
         .edit-input-field {
             background: #111 !important;
             border: 1px solid #333 !important;
@@ -245,7 +243,7 @@
         </div>
     </div>
 
-    <!-- CONTEÚDO PRINCIPAL (OCULTO ATÉ LOGIN) -->
+    <!-- CONTEÚDO PRINCIPAL -->
     <div id="app-content" class="hidden-auth">
         <nav class="border-b border-white/5 bg-black sticky top-0 z-[100]">
             <div class="max-w-[1600px] mx-auto px-6 py-4 flex justify-between items-center">
@@ -317,6 +315,7 @@
                                     <div class="flex flex-col"><label class="field-label">Nome Representante</label><input type="text" id="rep_nome" class="input-dark w-full p-2 rounded font-bold"></div>
                                     <div class="section-header header-blue">Informações Pessoais</div>
                                     <div><label class="field-label">CPF</label><input type="text" id="rep_cpf" class="input-dark w-full p-2 rounded"></div>
+                                    <div><label class="field-label">Endereço do Representante</label><input type="text" id="rep_endereco_pessoal" class="input-dark w-full p-2 rounded"></div>
                                     <div class="section-header header-orange">Comunicação</div>
                                     <div><label class="field-label">E-mail</label><input type="email" id="rep_email" class="input-dark w-full p-2 rounded"></div>
                                     <div class="section-header header-purple">Contato</div>
@@ -328,6 +327,7 @@
                                 </div>
                                 <div class="space-y-4">
                                     <div class="flex flex-col"><label class="field-label">Razão Social</label><input type="text" id="emp_razao" class="input-dark w-full p-2 rounded font-bold"></div>
+                                    <div><label class="field-label">CNAE</label><input type="text" id="emp_cnae" class="input-dark w-full p-2 rounded"></div>
                                     <div class="section-header header-blue">Acesso Gov</div>
                                     <div><label class="field-label">Senha GOV</label><input type="text" id="gov_senha" class="input-dark w-full p-2 rounded"></div>
                                     <div class="section-header header-orange">Protocolo Junta</div>
@@ -402,7 +402,7 @@
         const auth = getAuth(app);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'sureappfinal-default';
 
-        const ETAPAS = ["Gov.br", "Junta", "Receita", "Contrato", "CNPJ", "Conta PF", "Conta PJ", "PIX", "Pagto", "Boleto", "Saque", "Finalizada"];
+        const ETAPAS = ["Gov.br", "Junta", "Receita", "DAS", "Contrato", "CNPJ", "Conta PF", "Conta PJ", "PIX", "Pagto", "Boleto", "Saque", "Finalizada"];
         const PESO_DOBRO = ["Pagto", "Boleto", "Finalizada"];
 
         let localDB = [];
@@ -410,7 +410,6 @@
         let unsubscribeSnap = null;
         let currentProntuarioId = null;
 
-        // AUTH HANDLERS
         window.handleLogin = async function() {
             const email = document.getElementById('login-email').value;
             const pass = document.getElementById('login-password').value;
@@ -476,14 +475,13 @@
             unsubscribeSnap = onSnapshot(q, (snapshot) => {
                 localDB = [];
                 snapshot.forEach((doc) => { localDB.push({ fireId: doc.id, ...doc.data() }); });
+                
                 localDB.sort((a, b) => b.id - a.id);
                 renderListaEmpresas();
                 updateDashboard();
                 if (!document.getElementById('content-lab').classList.contains('hidden')) renderLab();
                 
-                // Atualizar modal se aberto
                 if(currentProntuarioId && !document.getElementById('modalProntuario').classList.contains('hidden')) {
-                    // Só atualiza visualização se não estiver em modo edição (para não perder o que o user digita)
                     if(document.getElementById('btn-save-dossie').classList.contains('hidden')) {
                         openProntuario(currentProntuarioId);
                     }
@@ -497,11 +495,13 @@
                 id: Date.now(),
                 rep_nome: document.getElementById('rep_nome').value,
                 rep_cpf: document.getElementById('rep_cpf').value,
+                rep_endereco_pessoal: document.getElementById('rep_endereco_pessoal').value,
                 rep_email: document.getElementById('rep_email').value,
                 rep_tel: document.getElementById('rep_tel').value,
                 rep_endereco: document.getElementById('rep_endereco').value,
                 rep_nasc: document.getElementById('rep_nasc').value,
                 emp_razao: document.getElementById('emp_razao').value,
+                emp_cnae: document.getElementById('emp_cnae').value,
                 gov_senha: document.getElementById('gov_senha').value,
                 prot_jucemg: document.getElementById('prot_jucemg').value,
                 prot_receita: document.getElementById('prot_receita').value,
@@ -554,19 +554,11 @@
                 else if (c.status === 'warning') score += (3 * peso);
                 else if (c.status === 'error') score += (1 * peso);
             });
-            const cpPJ = e.checkpoints[ETAPAS.indexOf("Conta PJ")];
-            let diasVida = 0, statusLongevidade = "N/A", corLongevidade = "text-gray-600";
-            if (cpPJ?.timestamp) {
-                diasVida = Math.floor(Math.abs(Date.now() - cpPJ.timestamp) / (1000 * 60 * 60 * 24));
-                if (diasVida >= 15) { statusLongevidade = "Excelente"; corLongevidade = "text-green-500"; }
-                else if (diasVida >= 5) { statusLongevidade = "Médio"; corLongevidade = "text-yellow-500"; }
-                else { statusLongevidade = "Alerta"; corLongevidade = "text-red-600"; }
-            }
             const percEficiencia = maxPossivel > 0 ? Math.round((score / maxPossivel) * 100) : 0;
             let rating = "Vigilância", corRating = "bg-yellow-500/20 text-yellow-500 border-yellow-500/50";
             if (percEficiencia >= 80) { rating = "Segura"; corRating = "bg-green-500/20 text-green-500 border-green-500/50"; }
             else if (percEficiencia < 50) { rating = "Risco"; corRating = "bg-red-500/20 text-red-500 border-red-500/50"; }
-            return { score, percEficiencia, diasVida, statusLongevidade, corLongevidade, rating, corRating };
+            return { score, percEficiencia, rating, corRating };
         }
 
         window.updateDashboard = function() {
@@ -648,10 +640,10 @@
                         <div class="grid gap-4">
                             ${renderField("Nome Completo", e.rep_nome, 'rep_nome')}
                             ${renderField("CPF", e.rep_cpf, 'rep_cpf')}
+                            ${renderField("Endereço Pessoal", e.rep_endereco_pessoal, 'rep_endereco_pessoal')}
                             ${renderField("Nascimento", e.rep_nasc, 'rep_nasc', 'date')}
                             ${renderField("E-mail", e.rep_email, 'rep_email')}
                             ${renderField("Telefone", e.rep_tel, 'rep_tel')}
-                            ${renderField("Endereço", e.rep_endereco, 'rep_endereco', 'textarea')}
                         </div>
                     </div>
                 </div>
@@ -660,8 +652,10 @@
                         <h3 class="dossie-section-title">Dados da Empresa</h3>
                         <div class="grid gap-4">
                             ${renderField("Razão Social", e.emp_razao, 'emp_razao')}
+                            ${renderField("CNAE", e.emp_cnae, 'emp_cnae')}
                             ${renderField("CNPJ", e.emp_cnpj, 'emp_cnpj')}
                             ${renderField("Senha GOV", e.gov_senha, 'gov_senha')}
+                            ${renderField("Endereço Empresa", e.rep_endereco, 'rep_endereco', 'textarea')}
                         </div>
                     </div>
                     <div>
@@ -706,18 +700,15 @@
 
         document.getElementById('btn-save-dossie').onclick = async function() {
             if(!currentProntuarioId) return;
-            
             const btn = this;
             const updates = {};
             document.querySelectorAll('.edit-input-field').forEach(input => {
                 updates[input.dataset.field] = input.value;
             });
-
             try {
                 btn.disabled = true;
                 btn.innerText = "Sincronizando...";
                 await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'empresas', currentProntuarioId), updates);
-                
                 btn.innerText = "Salvo!";
                 setTimeout(() => {
                     btn.innerText = "Salvar Alterações";
@@ -743,6 +734,7 @@
 
         window.renderListaEmpresas = function() {
             const container = document.getElementById('listaEmpresas');
+            if(!container) return;
             document.getElementById('counter').innerText = localDB.length;
             container.innerHTML = localDB.map(e => `<div onclick="openProntuario('${e.fireId}')" class="p-3 bg-white/[0.03] border border-white/5 rounded hover:border-red-600/50 transition-all cursor-pointer">
                 <h4 class="text-[10px] font-black text-white uppercase truncate">${e.emp_razao}</h4>
