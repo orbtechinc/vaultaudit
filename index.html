@@ -477,8 +477,10 @@
                 snapshot.forEach((doc) => { localDB.push({ fireId: doc.id, ...doc.data() }); });
                 
                 localDB.sort((a, b) => b.id - a.id);
-                renderListaEmpresas();
-                updateDashboard();
+                
+                // Renderizar interfaces se necessário
+                if (!document.getElementById('content-docs').classList.contains('hidden')) renderListaEmpresas();
+                if (!document.getElementById('content-dash').classList.contains('hidden')) updateDashboard();
                 if (!document.getElementById('content-lab').classList.contains('hidden')) renderLab();
                 
                 if(currentProntuarioId && !document.getElementById('modalProntuario').classList.contains('hidden')) {
@@ -521,6 +523,7 @@
             if (!currentUser) return;
             const e = localDB.find(x => x.fireId === empFireId);
             if (!e) return;
+            
             const agora = new Date();
             const novosCheckpoints = [...e.checkpoints];
             novosCheckpoints[stepIdx] = {
@@ -530,6 +533,11 @@
                 hora: agora.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit', second:'2-digit'}),
                 timestamp: agora.getTime()
             };
+            
+            // Atualização local imediata para feedback instantâneo antes da resposta do Firebase
+            e.checkpoints = novosCheckpoints;
+            renderLab(); 
+
             try {
                 await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'empresas', empFireId), { checkpoints: novosCheckpoints });
             } catch (err) { console.error("Erro ao atualizar status:", err); }
@@ -543,6 +551,7 @@
             activeBtn.classList.add('active', 'text-white');
             if(tab === 'lab') renderLab();
             if(tab === 'dash') updateDashboard();
+            if(tab === 'docs') renderListaEmpresas();
         };
 
         function calcularAnalise(e) {
@@ -598,27 +607,39 @@
                         ${(c.status === 'none' || c.status === 'error') ? `<div onclick="setStatus('${e.fireId}', ${idx}, 'error')" class="dot dot-red" id="dot-${e.fireId}-${idx}-error"></div>` : ''}
                     </div>${c.data ? `<div class="timestamp-badge"><span>${c.data}</span><span class="time">${c.hora}</span></div>` : `<div class="h-[36px]"></div>`}</div>`).join('')}</div></div></div>`
             }).join('');
-            localDB.forEach(e => drawLines(e));
+            
+            // Desenhar linhas imediatamente após construir o HTML
+            setTimeout(() => {
+                localDB.forEach(e => drawLines(e));
+            }, 50); 
         };
 
         function drawLines(e) {
             const svg = document.getElementById(`svg-${e.fireId}`);
             const wrapper = document.getElementById(`wrapper-${e.fireId}`);
-            if(!svg || !wrapper) return; svg.innerHTML = '';
+            if(!svg || !wrapper) return; 
+            
+            svg.innerHTML = '';
             const rect = wrapper.getBoundingClientRect();
+            
             for(let i = 0; i < e.checkpoints.length - 1; i++) {
                 const current = e.checkpoints[i], next = e.checkpoints[i+1];
                 if(current.status === 'none' || next.status === 'none') continue;
+                
                 const dotStart = document.getElementById(`dot-${e.fireId}-${i}-${current.status}`);
                 const dotEnd = document.getElementById(`dot-${e.fireId}-${i+1}-${next.status}`);
+                
                 if(dotStart && dotEnd) {
                     const b1 = dotStart.getBoundingClientRect(), b2 = dotEnd.getBoundingClientRect();
                     const x1 = b1.left - rect.left + b1.width/2, y1 = b1.top - rect.top + b1.height/2;
                     const x2 = b2.left - rect.left + b2.width/2, y2 = b2.top - rect.top + b2.height/2;
+                    
                     const color = current.status === 'success' ? '#16a34a' : (current.status === 'warning' ? '#ca8a04' : '#dc2626');
                     const line = document.createElementNS("http://www.w3.org/2000/svg", "path");
                     line.setAttribute("d", `M ${x1} ${y1} C ${x1 + (x2-x1)/2} ${y1}, ${x1 + (x2-x1)/2} ${y2}, ${x2} ${y2}`);
-                    line.setAttribute("class", "path-active"); line.setAttribute("stroke", color); line.setAttribute("opacity", "0.4");
+                    line.setAttribute("class", "path-active"); 
+                    line.setAttribute("stroke", color); 
+                    line.setAttribute("opacity", "0.4");
                     svg.appendChild(line);
                 }
             }
@@ -740,7 +761,6 @@
                 <h4 class="text-[10px] font-black text-white uppercase truncate">${e.emp_razao}</h4>
                 <p class="text-[8px] text-gray-600 font-bold mt-1 uppercase">${e.rep_nome}</p>
             </div>`).join('');
-            updateDashboard();
         };
 
         window.addEventListener('resize', () => { if (!document.getElementById('content-lab').classList.contains('hidden')) renderLab(); });
